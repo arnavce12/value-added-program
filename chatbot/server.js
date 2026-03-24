@@ -10,7 +10,7 @@ app.use(express.static('.')); // serves index.html in src
 
 // Proxy route — receives request from browser, forwards to Mistral
 app.post('/api/chat', async (req, res) => {
-  const { messages, model, apiKey } = req.body;
+  const { messages, model, apiKey, temperature, max_tokens } = req.body;
 
   if (!apiKey) {
     return res.status(400).json({ message: 'No API key provided.' });
@@ -30,7 +30,9 @@ app.post('/api/chat', async (req, res) => {
       },
       body: JSON.stringify({
         model: model || 'mistral-large-latest',
-        messages
+        messages,
+        temperature: temperature ?? 0.7,
+        max_tokens: max_tokens ?? 512
       })
     });
 
@@ -43,7 +45,7 @@ app.post('/api/chat', async (req, res) => {
     res.json(data);
 
   } catch (err) {
-    console.error('Proxy error:', err.message);
+    console.error('Proxy error FULL:', err);
     res.status(500).json({ message: `Server error: ${err.message}` });
   }
 });

@@ -486,6 +486,18 @@
           </select>
           <p class="setting-hint">Larger = smarter but slower. Large is best for general use.</p>
         </div>
+
+        <div class="setting-row">
+          <label>Temperature (<span id="temp-val">0.7</span>)</label>
+          <input type="range" class="setting-input" id="temp-slider" min="0" max="1" step="0.1" value="0.7">
+          <p class="setting-hint">Higher = more creative/random, Lower = more focused/deterministic.</p>
+        </div>
+
+        <div class="setting-row">
+          <label>Max Tokens (<span id="tokens-val">512</span>)</label>
+          <input type="range" class="setting-input" id="tokens-slider" min="64" max="4096" step="64" value="512">
+          <p class="setting-hint">Limit the maximum length of the AI response.</p>
+        </div>
       </div>
 
     </div>
@@ -498,6 +510,8 @@
   // ── STATE ──────────────────────────────────────────
   let API_KEY = "";
   let MODEL   = "mistral-large-latest";
+  let TEMPERATURE = 0.7;
+  let MAX_TOKENS = 512;
   const API_URL = "/api/chat"; // proxied through server.js to avoid CORS
   const history = [];
   // ───────────────────────────────────────────────────
@@ -514,6 +528,10 @@
   const toggleVisBtn = document.getElementById("toggle-vis-btn");
   const keyDisplay   = document.getElementById("key-display");
   const modelSelect  = document.getElementById("model-select");
+  const tempSlider   = document.getElementById("temp-slider");
+  const tempVal      = document.getElementById("temp-val");
+  const tokensSlider = document.getElementById("tokens-slider");
+  const tokensVal    = document.getElementById("tokens-val");
   const toast        = document.getElementById("toast");
 
   // ── TABS ───────────────────────────────────────────
@@ -576,6 +594,16 @@
   modelSelect.addEventListener("change", () => {
     MODEL = modelSelect.value;
     showToast(`Model → ${MODEL}`, "success");
+  });
+
+  tempSlider.addEventListener("input", () => {
+    TEMPERATURE = parseFloat(tempSlider.value);
+    tempVal.textContent = TEMPERATURE.toFixed(1);
+  });
+
+  tokensSlider.addEventListener("input", () => {
+    MAX_TOKENS = parseInt(tokensSlider.value);
+    tokensVal.textContent = MAX_TOKENS;
   });
 
   // ── TOAST ──────────────────────────────────────────
@@ -669,7 +697,13 @@
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: MODEL, messages: history, apiKey: API_KEY })
+        body: JSON.stringify({ 
+          model: MODEL, 
+          messages: history, 
+          apiKey: API_KEY,
+          temperature: TEMPERATURE,
+          max_tokens: MAX_TOKENS
+        })
       });
 
       if (!response.ok) {
