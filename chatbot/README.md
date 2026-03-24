@@ -4,7 +4,7 @@
 
 **Built on Day 2 of the Value Added Program**
 
-[📄 View Visual README](https://arnavce12.github.io/value-added-program/README.html)
+[📄 View Visual README](https://arnavce12.github.io/value-added-program/index.html)
 
 ---
 
