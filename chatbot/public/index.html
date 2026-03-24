@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mistral Chat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Mono:wght@300;400&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+
+  <header>
+    <div class="logo-dot"></div>
+    <h1>Mistral Chat</h1>
+    <span id="key-status-badge" class="unset">checking...</span>
+    <nav class="header-tabs">
+      <button class="tab-btn active" data-tab="chat">Chat</button>
+      <button class="tab-btn" data-tab="settings">Settings</button>
+    </nav>
+  </header>
+
+  <!-- ── CHAT TAB ── -->
+  <div class="tab-panel active" id="tab-chat">
+    <div id="chat">
+      <div class="chat-center-state" id="empty-state">
+        <div class="icon">⬡</div>
+        <p>send a message to begin</p>
+      </div>
+    </div>
+    <div id="settingsBar">
+      <label>🔊 Voice: <select id="voiceSelect">
+          <option value="">Off</option>
+        </select></label>
+      <label>🌐 Language: <select id="langSelect"></select></label>
+      <label>🎛️ Style: <select id="styleSelect">
+          <option value="default">Default</option>
+          <option value="concise">Concise</option>
+          <option value="detailed">Detailed</option>
+          <option value="formal">Formal</option>
+          <option value="simple">Simple</option>
+        </select></label>
+    </div>
+    <div id="chat-footer">
+      <div id="uploadArea">
+        <label for="fileInput" id="uploadLabel" style="cursor: pointer; font-size: 0.8rem; color: var(--accent);">
+          📎 Attach file (JPG, PNG, PDF — max 10MB)
+        </label>
+        <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.pdf" style="display:none">
+        <span id="uploadStatus" style="font-size: 0.75rem; margin-left: 10px; color: var(--text-muted);"></span>
+      </div>
+      <div class="input-row">
+        <textarea id="user-input" rows="1" placeholder="Type a message..."></textarea>
+        <button id="send-btn">
+          <svg viewBox="0 0 24 24">
+            <path d="M2 21L23 12 2 3v7l15 2-15 2v7z" />
+          </svg>
+        </button>
+      </div>
+      <p class="footer-hint">enter to send &nbsp;·&nbsp; shift+enter for new line</p>
+    </div>
+  </div>
+
+  <!-- ── SETTINGS TAB ── -->
+  <div class="tab-panel" id="tab-settings">
+    <div id="settings-panel">
+      <div class="settings-inner">
+
+        <div class="settings-section">
+          <h2>Server Configuration</h2>
+          <div class="setting-row">
+            <label>Status</label>
+            <div class="key-status-row" id="key-display">Checking server status...</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h2>Model</h2>
+          <div class="setting-row">
+            <label>Active Model</label>
+            <select class="setting-input" id="model-select">
+              <option value="mistral-large-latest">mistral-large-latest</option>
+              <option value="mistral-medium-latest">mistral-medium-latest</option>
+              <option value="mistral-small-latest">mistral-small-latest</option>
+              <option value="open-mistral-7b">open-mistral-7b</option>
+            </select>
+            <p class="setting-hint">Larger = smarter but slower. Large is best for general use.</p>
+          </div>
+
+          <div class="setting-row">
+            <label>Temperature (<span id="temp-val">0.7</span>)</label>
+            <input type="range" class="setting-input" id="temp-slider" min="0" max="1" step="0.1" value="0.7">
+            <p class="setting-hint">Higher = more creative/random, Lower = more focused/deterministic.</p>
+          </div>
+
+          <div class="setting-row">
+            <label>Max Tokens (<span id="tokens-val">512</span>)</label>
+            <input type="range" class="setting-input" id="tokens-slider" min="64" max="4096" step="64" value="512">
+            <p class="setting-hint">Limit the maximum length of the AI response.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="./js/app.js"></script>
+</body>
+
+</html>

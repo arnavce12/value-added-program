@@ -1,55 +1,28 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-
+const path = require('path');
 const app = express();
-const PORT = 3000;
+const { mistralKey } = require('./src/config');
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.')); // serves index.html in src
 
-// Proxy route — receives request from browser, forwards to Mistral
-app.post('/api/chat', async (req, res) => {
-  const { messages, model, apiKey, temperature, max_tokens } = req.body;
+// Serve frontend
+app.use(express.static(path.join(__dirname, 'public')));
 
-  if (!apiKey) {
-    return res.status(400).json({ message: 'No API key provided.' });
-  }
-
-  if (!messages || !Array.isArray(messages)) {
-    return res.status(400).json({ message: 'Invalid messages format.' });
-  }
-
-  try {
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: model || 'mistral-large-latest',
-        messages,
-        temperature: temperature ?? 0.7,
-        max_tokens: max_tokens ?? 512
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(response.status).json({ message: data.message || 'Mistral API error.' });
-    }
-
-    res.json(data);
-
-  } catch (err) {
-    console.error('Proxy error FULL:', err);
-    res.status(500).json({ message: `Server error: ${err.message}` });
-  }
+// Check if default API key is available
+app.get('/api/config', (req, res) => {
+  res.json({
+    status: mistralKey ? 'ready' : 'missing_key'
+  });
 });
 
-app.listen(PORT, () => {
-  console.log(`\n  Mistral Chat running at http://localhost:${PORT}\n`);
-});
+// Routes
+app.use('/api/chat', require('./src/routes/chat'));
+app.use('/api/tts', require('./src/routes/tts'));
+app.use('/api/upload', require('./src/routes/upload'));
+app.use('/api/session', require('./src/routes/session'));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
