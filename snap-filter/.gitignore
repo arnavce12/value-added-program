@@ -1,0 +1,68 @@
+# ----------------------------
+# Python cache & compiled files
+# ----------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ----------------------------
+# Virtual environments
+# ----------------------------
+venv/
+.env/
+.env.*
+.venv/
+
+# ----------------------------
+# Python packaging
+# ----------------------------
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ----------------------------
+# Logs & temp files
+# ----------------------------
+*.log
+*.tmp
+*.temp
+
+# ----------------------------
+# OS generated files
+# ----------------------------
+.DS_Store
+Thumbs.db
+
+# ----------------------------
+# IDE / Editor files
+# ----------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ----------------------------
+# Jupyter (if used later)
+# ----------------------------
+.ipynb_checkpoints/
+
+# ----------------------------
+# MediaPipe / Model files (optional)
+# KEEP these if you want reproducibility
+# IGNORE if too large or downloadable
+# ----------------------------
+*.task
+
+# ----------------------------
+# Screenshots (optional)
+# Uncomment if not needed in repo
+# ----------------------------
+screenshots/
+
+# ----------------------------
+# Secrets / configs
+# ----------------------------
+.env.local
+.env.development
+.env.production
