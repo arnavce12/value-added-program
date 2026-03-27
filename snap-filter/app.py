@@ -1,6 +1,7 @@
 import cv2
 import os
 import time
+import threading
 import tkinter as tk
 from collections import Counter
 import numpy as np
@@ -65,7 +66,19 @@ class FilterApp:
         self.stable_angle = Stabilizer(alpha=0.7)
         self.stable_warppts = Stabilizer(alpha=0.8)
         self.last_tracked_filter = self.active_filter_key
-
+        
+        self.mode = "AR"
+        self.scanner_data = None
+        
+        # Identity signature
+        self.arnav_signature = None
+        ref_img = cv2.imread("filters/arnav.jpg")
+        if ref_img is not None:
+            res = face.detect_faces_full(ref_img, self.face_mesh)
+            if res.face_landmarks:
+                ih, iw, _ = ref_img.shape
+                self.arnav_signature = face.get_face_signature(res.face_landmarks[0], iw, ih)
+                
         self.delay = 15 # ms delay for update loop
         self.update_background_color()
         self.update()
@@ -74,6 +87,14 @@ class FilterApp:
         # Header
         self.header = tk.Label(self.window, text="Snap Filters Desktop", font=("Segoe UI", 18, "bold"), fg="#FFFFFF")
         self.header.pack(pady=10)
+
+        # Tabs Frame
+        self.tabs_frame = tk.Frame(self.window, bg="#1a1a2e", pady=10)
+        self.tabs_frame.pack(fill=tk.X)
+        self.btn_ar = tk.Button(self.tabs_frame, text="🎭 AR Filters", font=("Segoe UI", 12, "bold"), bg="#e94560", fg="white", relief=tk.FLAT, command=self.set_mode_ar)
+        self.btn_ar.pack(side=tk.LEFT, padx=20, expand=True, fill=tk.X)
+        self.btn_scan = tk.Button(self.tabs_frame, text="🧠 Smart Scanner", font=("Segoe UI", 12, "bold"), bg="#16213e", fg="white", relief=tk.FLAT, command=self.set_mode_scan)
+        self.btn_scan.pack(side=tk.RIGHT, padx=20, expand=True, fill=tk.X)
         
         # Canvas
         self.canvas = tk.Canvas(self.window, width=self.width, height=self.height, bg="#000000", highlightthickness=0)
@@ -126,6 +147,20 @@ class FilterApp:
             
         self.update_button_colors()
             
+    def set_mode_ar(self):
+        self.mode = "AR"
+        self.btn_ar.config(bg="#e94560")
+        self.btn_scan.config(bg="#16213e")
+        self.carousel.pack(fill=tk.X, side=tk.BOTTOM)
+        self.ctrl_frame.pack(fill=tk.X, pady=10)
+
+    def set_mode_scan(self):
+        self.mode = "SCANNER"
+        self.btn_scan.config(bg="#e94560")
+        self.btn_ar.config(bg="#16213e")
+        self.carousel.pack_forget()
+        self.ctrl_frame.pack_forget()
+
     def set_filter(self, key):
         self.active_filter_key = key
         self.update_button_colors()
@@ -161,6 +196,58 @@ class FilterApp:
             frame = cv2.flip(frame, 1)
             ih, iw, _ = frame.shape
             
+            if self.mode == "SCANNER":
+                res = face.detect_faces_full(frame, self.face_mesh)
+                if res.face_landmarks:
+                    landmarks = res.face_landmarks[0]
+                    blendshapes = res.face_blendshapes[0]
+                    scores = {b.category_name: b.score for b in blendshapes}
+                    
+                    emotion = "Neutral"
+                    if scores.get("jawOpen", 0) > 0.4 and scores.get("eyeBlinkLeft", 0) < 0.2:
+                        emotion = "Surprised"
+                    elif scores.get("mouthSmileLeft", 0) > 0.4 or scores.get("mouthSmileRight", 0) > 0.4:
+                        emotion = "Happy"
+                    elif scores.get("browDownLeft", 0) > 0.5 and scores.get("browDownRight", 0) > 0.5:
+                        emotion = "Angry"
+                    elif scores.get("mouthFrownLeft", 0) > 0.3 or scores.get("mouthFrownRight", 0) > 0.3:
+                        emotion = "Sad"
+                        
+                    name = "Human"
+                    similarity = 0.0
+                    if self.arnav_signature is not None:
+                        live_sig = face.get_face_signature(landmarks, iw, ih)
+                        if live_sig is not None:
+                            # Cosine Similarity between two L2-normalized unit vectors is purely their Dot Product 
+                            similarity = np.dot(self.arnav_signature, live_sig)
+                            if similarity > 0.998: # Extreme precision threshold for tracking
+                                name = "Arnav"
+                                
+                    age = 21 if name == "Arnav" else 25
+                    
+                    xs = [int(p.x * iw) for p in landmarks]
+                    ys = [int(p.y * ih) for p in landmarks]
+                    x, y, w, h = min(xs), min(ys), max(xs)-min(xs), max(ys)-min(ys)
+                    
+                    color = (0, 255, 0) if name == "Arnav" else (0, 255, 255)
+                    cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
+                    
+                    px, py = x + w + 10, y
+                    if px + 200 > iw: px = x - 210
+                    cv2.rectangle(frame, (px, py), (px+200, py+110), (20,20,20), -1)
+                    cv2.rectangle(frame, (px, py), (px+200, py+110), color, 1)
+                    
+                    cv2.putText(frame, f"ID: {name}", (px+10, py+25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+                    cv2.putText(frame, f"Age: {int(age)}", (px+10, py+50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1)
+                    cv2.putText(frame, f"Mood: {emotion}", (px+10, py+75), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1)
+                    cv2.putText(frame, f"Match: {similarity:.4f}", (px+10, py+100), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (150,150,150), 1)
+
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                self.photo = ImageTk.PhotoImage(image=Image.fromarray(frame_rgb))
+                self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
+                self.window.after(self.delay, self.update)
+                return
+
             current_time = time.time()
             if hasattr(self, 'force_screenshot') and self.force_screenshot:
                 is_thumbs_up = True
@@ -169,7 +256,6 @@ class FilterApp:
                 point_direction = None
             else:
                 finger_count, is_thumbs_up, point_direction = hand.analyze_hand(frame)
-            
             if self.active_filter_key != self.last_tracked_filter:
                 self.stable_pos.reset()
                 self.stable_size.reset()
