@@ -66,3 +66,5 @@ screenshots/
 .env.local
 .env.development
 .env.production
+# Personal reference photo
+filters/arnav.jpg
