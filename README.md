@@ -7,8 +7,10 @@ A monorepo for projects that are being worked on in this 6 day value added progr
 
 ## Projects Table
 
-| Project | Description | Created On | Live Page |
-| :--- | :--- | :--- | :--- |
-| [🤖 AI Chatbot](./chatbot) | A full-featured multimodal AI chatbot with multilingual support, regional text-to-speech, file understanding, and SQLite-backed session memory. | Day 2 | [View Live](https://arnavce12.github.io/value-added-program/) |
+| Project | Description | Live visual |
+| :--- | :--- | :--- |
+| [🤖 AI Chatbot](./chatbot) | A full-featured multimodal AI chatbot with multilingual support, regional text-to-speech, file understanding, and SQLite-backed session memory. | [View Live](https://arnavce12.github.io/value-added-program/) |
+| [🛎️ Receptionist](./receptionist-system) | An AI-powered virtual receptionist for multi-tenant handling, including Supabase integration. |  |
+| [📸 Snap AR Filters](./snap-filter) | A real-time face-filter application with 3D-aware affine warping, temporal stabilization, and gesture-driven filter switching. |  |
 
 ---
